@@ -1,0 +1,30 @@
+name: Standard proposal
+description: Propose a change or addition to the AeroFlex Standard (interfaces, geometry, conventions)
+labels: ["proposal"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What can't you do (or do cleanly) with the standard as documented today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: The change you suggest. Sketches, dimensions, and part links welcome.
+    validations:
+      required: true
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Compatibility impact
+      description: Does this break existing muscles, fittings, or integrations? How would both generations coexist?
+    validations:
+      required: true
+  - type: textarea
+    id: prior-art
+    attributes:
+      label: Prior art
+      description: Existing products, papers, or standards that already solve this (and why they do or don't fit).

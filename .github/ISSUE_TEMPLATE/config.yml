@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and support
+    url: https://github.com/Delta-Robotics-Inc/AeroFlex/blob/main/.github/SUPPORT.md
+    about: Where to ask questions and how to reach the maintainers.
+  - name: Safety-sensitive report
+    url: https://github.com/Delta-Robotics-Inc/AeroFlex/blob/main/.github/SECURITY.md
+    about: Report errors with safety implications privately, not in a public issue.

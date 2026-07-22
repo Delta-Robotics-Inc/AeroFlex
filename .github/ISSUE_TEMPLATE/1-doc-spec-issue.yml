@@ -1,0 +1,29 @@
+name: Doc or spec issue
+description: Report an error, inconsistency, or unsafe value in the AeroFlex docs
+labels: ["docs"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If the error has safety implications (pressure ratings, materials,
+        failure modes), please report privately instead - see SECURITY.md.
+  - type: input
+    id: location
+    attributes:
+      label: Where
+      description: File and section, e.g. "docs/design.md, End fittings"
+      placeholder: docs/design.md
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong
+      description: Quote the text or value and explain the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: correction
+    attributes:
+      label: What it should say (if known)
+      description: Include a source (paper, datasheet, or your measured data) if you have one.
