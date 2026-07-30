@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<!-- SPDX-License-Identifier: Apache-2.0
+     AeroFlex Test-Rig Live Console
+     Local-first Web Serial dashboard for the Uno R4 Minima tensile-test rig. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1d1d1d">
+<meta name="description" content="Live position, encoder, limit, force-status, and motion telemetry for the AeroFlex tensile-test rig.">
+<meta property="og:title" content="AeroFlex // Test-Rig Live Console">
+<meta property="og:description" content="Live carriage, encoder, limit, and motion telemetry for the AeroFlex tensile-test rig.">
+<meta property="og:image" content="/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<title>AEROFLEX // TEST-RIG LIVE CONSOLE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#1d1d1d;--panel:#232323;--panel2:#282828;--line:#414141;--muted:#969696;
+  --fg:#e5e2dc;--orange:#ff7448;--green:#66d496;--yellow:#f3c969;--red:#ff5c57;
+  --cyan:#65c8d8;--shadow:rgba(0,0,0,.35);--font:"Kode Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;scrollbar-width:none}
+*::-webkit-scrollbar{display:none}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--fg);font-family:var(--font)}
+body{
+  min-height:100vh;
+  background-image:linear-gradient(rgba(90,90,90,.15) 1px,transparent 1px),linear-gradient(90deg,rgba(90,90,90,.15) 1px,transparent 1px);
+  background-size:40px 40px;
+  text-shadow:0 0 7px color-mix(in srgb,currentColor 12%,transparent);
+}
+body::after{content:"";position:fixed;z-index:80;inset:0;pointer-events:none;opacity:.27;background:repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,0,0,.35) 2px 3px)}
+button,input{font:inherit}
+button{border:0}
+.header{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--line);background:rgba(29,29,29,.91);backdrop-filter:blur(12px)}
+.brand{min-width:0}.brand h1{font-size:16px;line-height:1;margin:0;letter-spacing:.2em;white-space:nowrap}.brand h1 b{color:var(--orange)}
+.eyebrow,.label{color:var(--muted);font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+.brand .eyebrow{margin-top:6px;letter-spacing:.08em}
+.header-spacer{flex:1}
+.link-state{display:flex;align-items:center;gap:8px;white-space:nowrap}.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}.dot.live{background:var(--green);box-shadow:0 0 10px var(--green)}.dot.stale{background:var(--yellow);box-shadow:0 0 10px var(--yellow)}
+.btn{--c:var(--orange);position:relative;color:var(--c);background:transparent;padding:8px 13px;text-transform:uppercase;letter-spacing:.15em;font-weight:700;font-size:10px;cursor:pointer;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));box-shadow:inset 0 0 0 1px var(--c);transition:.15s}
+.btn:hover:not(:disabled),.btn.solid{color:var(--bg);background:var(--c)}.btn:disabled{opacity:.3;cursor:not-allowed}.btn.red{--c:var(--red)}.btn.green{--c:var(--green)}.btn.gray{--c:var(--muted)}
+.shell{width:min(1800px,100%);margin:auto;padding:14px;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px}
+.alert{grid-column:1/-1;min-height:42px;border:1px solid var(--line);display:flex;align-items:stretch;background:var(--panel)}
+.hazard{width:54px;flex:none;background:repeating-linear-gradient(135deg,rgba(150,150,150,.38) 0 8px,transparent 8px 16px)}
+.alert.danger .hazard{background:repeating-linear-gradient(135deg,rgba(255,92,87,.5) 0 8px,transparent 8px 16px)}
+.alert .message{flex:1;display:flex;align-items:center;justify-content:center;gap:12px;text-align:center;padding:9px 14px;color:var(--muted);font-size:11px;letter-spacing:.06em}.alert.danger .message{color:var(--red)}
+.card{position:relative;background:var(--panel);border:1px solid var(--line);clip-path:polygon(0 0,calc(100% - 13px) 0,100% 13px,100% 100%,13px 100%,0 calc(100% - 13px));padding:14px;min-width:0}
+.card::before{content:"";position:absolute;right:5px;top:5px;width:5px;height:5px;border-top:1px solid var(--muted);border-right:1px solid var(--muted)}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}.tag{color:var(--muted);background:#303030;padding:2px 7px;font-size:9px;letter-spacing:.1em}
+.position-card{grid-column:span 4;grid-row:span 2;min-height:500px}.summary-card{grid-column:span 4}.limits-card{grid-column:span 4}.encoder-card{grid-column:span 4}.force-card{grid-column:span 4}.controls-card{grid-column:span 8}.console-card{grid-column:span 4;min-height:310px;padding:0;display:flex;flex-direction:column}.trend-card{grid-column:1/-1}
+.position-body{display:grid;grid-template-columns:minmax(120px,.8fr) minmax(180px,1.2fr);gap:24px;height:430px}
+.rig{position:relative;min-height:100%;display:flex;justify-content:center}
+.rail{position:absolute;top:24px;bottom:28px;width:18px;background:repeating-linear-gradient(0deg,#333 0 10px,#242424 10px 20px);border:1px solid var(--line);box-shadow:inset 0 0 13px #090909}
+.rail::before,.rail::after{content:"";position:absolute;left:50%;transform:translateX(-50%);width:74px;height:1px;background:var(--line)}
+.rail::before{top:0}.rail::after{bottom:0}
+.carriage{position:absolute;left:50%;bottom:var(--travel,7%);transform:translate(-50%,50%);width:92px;height:38px;background:var(--orange);color:var(--bg);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;letter-spacing:.12em;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));box-shadow:0 0 18px rgba(255,116,72,.45);transition:bottom .15s linear}
+.carriage.invalid{background:var(--muted);box-shadow:none}
+.limit-marker{position:absolute;left:calc(50% + 24px);display:flex;align-items:center;gap:7px;color:var(--muted);font-size:9px;letter-spacing:.08em;white-space:nowrap}.limit-marker.top{top:16px}.limit-marker.bottom{bottom:20px}.limit-led{width:9px;height:9px;border:1px solid var(--muted);border-radius:50%}.limit-marker.active{color:var(--green)}.limit-marker.active .limit-led{background:var(--green);border-color:var(--green);box-shadow:0 0 8px var(--green)}
+.scale{position:absolute;right:calc(50% + 24px);top:19px;bottom:24px;display:flex;flex-direction:column;justify-content:space-between;text-align:right;color:var(--muted);font-size:9px}
+.position-readout{display:flex;flex-direction:column;justify-content:center;gap:18px}.hero-number{font-size:52px;font-weight:700;line-height:.9;color:var(--orange);font-variant-numeric:tabular-nums}.hero-number.invalid{color:var(--muted)}.unit{font-size:11px;color:var(--muted);letter-spacing:.13em;margin-top:6px}
+.state-block{border-top:1px solid var(--line);padding-top:12px}.motion-name{font-size:19px;font-weight:700;text-transform:uppercase;letter-spacing:.12em}.motion-name.active{color:var(--orange)}.direction{margin-top:6px;color:var(--muted);font-size:11px}
+.meter{height:9px;background:#303030;margin-top:8px;overflow:hidden}.meter i{display:block;height:100%;width:0;background:var(--orange);box-shadow:0 0 8px var(--orange);transition:width .15s}
+.kv-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.kv{border-left:2px solid var(--line);padding-left:10px;min-width:0}.kv .value{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kv .sub{margin-top:4px;color:var(--muted);font-size:9px;letter-spacing:.08em}
+.status-line{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #353535;font-size:11px}.status-line:last-child{border:0}.pill{padding:2px 8px;background:#303030;color:var(--muted);font-size:9px;letter-spacing:.1em}.pill.ok{color:var(--green);background:rgba(102,212,150,.12)}.pill.warn{color:var(--yellow);background:rgba(243,201,105,.12)}.pill.bad{color:var(--red);background:rgba(255,92,87,.12)}
+.channels{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}.channel{padding:10px;border:1px solid var(--line);background:#202020}.channel.on{border-color:var(--cyan);box-shadow:inset 0 0 12px rgba(101,200,216,.08)}.channel strong{display:block;font-size:20px;margin-top:4px}
+.force-state{min-height:96px;display:flex;flex-direction:column;justify-content:center;color:var(--muted)}.force-state strong{font-size:18px;color:var(--yellow);line-height:1.35}.force-note{font-size:10px;line-height:1.55;margin-top:8px}
+.controls-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.action{min-height:70px;text-align:left;padding:10px;border:1px solid var(--line);background:#202020;color:var(--fg);cursor:pointer;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));transition:.15s}.action:hover:not(:disabled){border-color:var(--orange);background:rgba(255,116,72,.09)}.action:disabled{opacity:.3;cursor:not-allowed}.action strong{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase}.action span{display:block;margin-top:6px;color:var(--muted);font-size:9px;line-height:1.4}
+.stop{background:var(--red);color:var(--bg);border-color:var(--red);font-weight:700}.stop:hover:not(:disabled){background:#ff7772}.stop span{color:#4e1715}.arm-row{display:flex;gap:9px;align-items:stretch;margin-top:12px}.arm-row .btn{min-width:130px}.arm-copy{flex:1;padding:9px 11px;border-left:2px solid var(--line);color:var(--muted);font-size:10px;line-height:1.45}.arm-copy.live{border-color:var(--green);color:var(--green)}
+.manual-row{display:flex;gap:9px;align-items:stretch;margin-top:10px}.manual-row .btn{min-width:170px}.manual-copy{flex:1;padding:9px 11px;border-left:2px solid var(--yellow);color:var(--yellow);font-size:10px;line-height:1.45}
+.manual-zone{margin-top:10px;padding:12px;border:1px solid var(--yellow);background:rgba(243,201,105,.045)}.manual-zone-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.manual-zone-copy{margin:7px 0 11px;color:var(--muted);font-size:9px;line-height:1.45}.speed-row{display:grid;grid-template-columns:105px 1fr 72px;align-items:center;gap:10px;margin-bottom:11px;color:var(--muted);font-size:9px;letter-spacing:.08em}.speed-row input{width:100%;accent-color:var(--yellow)}.speed-value{color:var(--yellow);font-size:13px;font-weight:700;text-align:right}.manual-hold-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.manual-hold{min-height:86px;border:1px solid var(--yellow);background:#211f18;color:var(--yellow);cursor:pointer;touch-action:none;user-select:none;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));transition:.12s}.manual-hold:hover:not(:disabled),.manual-hold.holding{background:var(--yellow);color:#1d1d1d;box-shadow:0 0 18px rgba(243,201,105,.26)}.manual-hold:disabled{opacity:.28;cursor:not-allowed}.manual-hold strong{display:block;font-size:15px;letter-spacing:.12em}.manual-hold span{display:block;margin-top:7px;font-size:9px;letter-spacing:.07em}.manual-zone-foot{margin-top:9px;color:var(--yellow);font-size:9px;line-height:1.45}
+.lead-row{display:flex;gap:8px;margin-top:10px}.lead-row input{width:100%;min-width:0;background:#1c1c1c;color:var(--fg);border:1px solid var(--line);padding:8px 10px;outline:0}.lead-row input:focus{border-color:var(--orange)}
+.console-head{padding:13px 14px 8px}.console-tools{display:flex;gap:6px}.console-tools .btn{padding:5px 8px;font-size:8px}.stream-meta{display:flex;justify-content:space-between;padding:0 14px 8px;color:var(--muted);font-size:9px}.log{flex:1;min-height:230px;max-height:360px;overflow:auto;background:#1a1a1a;border-top:1px solid var(--line);padding:10px 12px;font-size:10px;line-height:1.5;white-space:pre-wrap;color:#777}.log .tele{color:#bbb}.log .event{color:var(--cyan)}.log .warn{color:var(--yellow)}.log .error{color:var(--red)}.log .sent{color:var(--orange)}
+.trend-wrap{height:210px;position:relative}.trend-wrap canvas{width:100%;height:100%;display:block}.legend{display:flex;gap:15px;align-items:center;color:var(--muted);font-size:9px}.legend i{display:inline-block;width:18px;height:2px;margin-right:5px;vertical-align:middle}.legend .step{background:var(--orange)}.legend .encoder{background:var(--cyan)}.legend .force{background:var(--green)}
+.footer{text-align:center;color:#6d6d6d;font-size:9px;letter-spacing:.13em;padding:4px 12px 18px}
+.unsupported{display:none}
+@media(max-width:1200px){.position-card{grid-column:span 6}.summary-card,.limits-card,.encoder-card,.force-card{grid-column:span 6}.controls-card{grid-column:span 8}.console-card{grid-column:span 4}}
+@media(max-width:900px){.header{flex-wrap:wrap}.link-state{order:3;width:100%}.position-card,.summary-card,.limits-card,.encoder-card,.force-card,.controls-card,.console-card{grid-column:1/-1}.position-card{min-height:470px}.controls-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:580px){.header{padding:11px}.brand h1{font-size:13px}.header .btn{padding:7px 9px}.shell{padding:9px;gap:9px}.position-body{grid-template-columns:1fr 1.1fr;gap:12px}.hero-number{font-size:38px}.kv-grid{grid-template-columns:1fr}.controls-grid{grid-template-columns:1fr 1fr}.hazard{width:28px}.alert .message{font-size:9px}.position-card{min-height:450px}}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="brand">
+    <h1>AEROFLEX <b>//</b> TEST-RIG</h1>
+    <div class="eyebrow">LIVE COMMISSIONING CONSOLE <span aria-hidden="true">_</span></div>
+  </div>
+  <div class="header-spacer"></div>
+  <div class="link-state" aria-live="polite">
+    <span id="connDot" class="dot"></span>
+    <span id="connText" class="label">OFFLINE</span>
+    <span id="protocolText" class="tag">NO DATA</span>
+  </div>
+  <button id="demoBtn" class="btn gray" type="button">Demo</button>
+  <button id="connectBtn" class="btn solid" type="button">Connect</button>
+</header>
+
+<main class="shell">
+  <section id="alert" class="alert" aria-live="assertive">
+    <div class="hazard"></div><div id="alertText" class="message">NO DEVICE CONNECTED — MOTION CONTROLS LOCKED</div><div class="hazard"></div>
+  </section>
+
+  <section class="card position-card">
+    <div class="card-head"><span class="label">CARRIAGE POSITION</span><span id="positionValidity" class="tag">NOT REFERENCED</span></div>
+    <div class="position-body">
+      <div class="rig" aria-label="Vertical carriage position from bottom zero">
+        <div class="scale"><span>400</span><span>300</span><span>200</span><span>100</span><span>0 mm</span></div>
+        <div class="rail"></div>
+        <div id="topMarker" class="limit-marker top"><span class="limit-led"></span>TOP · D12</div>
+        <div id="bottomMarker" class="limit-marker bottom"><span class="limit-led"></span>BOTTOM · D11</div>
+        <div id="carriage" class="carriage invalid" style="--travel:7%">UNKNOWN</div>
+      </div>
+      <div class="position-readout">
+        <div>
+          <div id="positionValue" class="hero-number invalid">—</div>
+          <div class="unit">MM ABOVE BOTTOM · STEP ESTIMATE</div>
+        </div>
+        <div class="state-block">
+          <div class="label">MOTION PHASE</div>
+          <div id="motionName" class="motion-name">IDLE</div>
+          <div id="directionText" class="direction">DIR · NONE</div>
+          <div class="meter"><i id="moveProgress"></i></div>
+        </div>
+        <div class="kv-grid">
+          <div class="kv"><div id="pulseRate" class="value">0</div><div class="sub">COMMAND PULSES / S</div></div>
+          <div class="kv"><div id="pulseCount" class="value">0</div><div class="sub">EMITTED THIS MOVE</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card summary-card">
+    <div class="card-head"><span class="label">MOTION CORE</span><span id="freshnessTag" class="tag">STALE</span></div>
+    <div class="kv-grid">
+      <div class="kv"><div id="deviceTime" class="value">—</div><div class="sub">DEVICE UPTIME</div></div>
+      <div class="kv"><div id="leadValue" class="value">3.8000</div><div class="sub">MM / EFFECTIVE REV</div></div>
+      <div class="kv"><div id="requestedPulses" class="value">0</div><div class="sub">REQUESTED PULSES</div></div>
+      <div class="kv"><div id="sampleCount" class="value">0</div><div class="sub">RETAINED SAMPLES</div></div>
+    </div>
+  </section>
+
+  <section class="card limits-card">
+    <div class="card-head"><span class="label">LIMITS & REFERENCES</span><span class="tag">ACTIVE LOW</span></div>
+    <div class="status-line"><span>TOP SWITCH · D12</span><span id="topState" class="pill">RELEASED</span></div>
+    <div class="status-line"><span>BOTTOM SWITCH · D11</span><span id="bottomState" class="pill">RELEASED</span></div>
+    <div class="status-line"><span>BOTTOM BOOT SAFETY</span><span id="safeState" class="pill bad">NOT PASSED</span></div>
+    <div class="status-line"><span>BOTTOM ZERO REFERENCE</span><span id="bottomRef" class="pill bad">NOT SET</span></div>
+    <div class="status-line"><span>TOP REFERENCE</span><span id="topRef" class="pill bad">NOT SET</span></div>
+  </section>
+
+  <section class="card encoder-card">
+    <div class="card-head"><span class="label">ENCODER DIAGNOSTIC</span><span class="tag">UNCALIBRATED</span></div>
+    <div class="channels">
+      <div id="channelA" class="channel"><span class="label">A · GRAY D3</span><strong id="aState">LOW</strong><span id="aEdges" class="eyebrow">0 EDGES</span></div>
+      <div id="channelB" class="channel"><span class="label">B · WHITE D2</span><strong id="bState">LOW</strong><span id="bEdges" class="eyebrow">0 EDGES</span></div>
+    </div>
+    <div class="kv-grid">
+      <div class="kv"><div id="encoderCount" class="value">0</div><div class="sub">SIGNED QUADRATURE COUNT</div></div>
+      <div class="kv"><div id="encoderMm" class="value">0.000</div><div class="sub">RELATIVE ESTIMATE · NOT POSITION</div></div>
+      <div class="kv"><div id="invalidCount" class="value">0</div><div class="sub">INVALID TRANSITIONS</div></div>
+      <div class="kv"><div id="encoderRatio" class="value">—</div><div class="sub">ABS ENCODER / COMMAND</div></div>
+    </div>
+  </section>
+
+  <section class="card force-card">
+    <div class="card-head"><span class="label">TENSILE FORCE</span><span id="forceTag" class="tag">NO SIGNAL</span></div>
+    <div class="force-state">
+      <strong id="forceState">UNAVAILABLE — HX711 DT REPAIR REQUIRED</strong>
+      <div id="forceNote" class="force-note">Force fields are present in telemetry but intentionally invalid. No load-cell value is inferred or displayed until the cut data wire is repaired and the channel is calibrated.</div>
+    </div>
+    <div class="kv-grid">
+      <div class="kv"><div id="forceValue" class="value">—</div><div class="sub">FORCE · N</div></div>
+      <div class="kv"><div id="peakForce" class="value">—</div><div class="sub">SESSION PEAK · N</div></div>
+    </div>
+  </section>
+
+  <section class="card controls-card">
+    <div class="card-head"><span class="label">SUPERVISED CONTROL</span><span id="armTag" class="tag">DISARMED</span></div>
+    <div class="controls-grid">
+      <button class="action diag" data-cmd="s" type="button"><strong>Status</strong><span>Switches, references, tracked distance</span></button>
+      <button class="action diag" data-cmd="e" type="button"><strong>Encoder</strong><span>Raw states, edges, count, errors</span></button>
+      <button class="action diag" data-cmd="z" type="button"><strong>Reset encoder</strong><span>Diagnostic counters only · no motion</span></button>
+      <button class="action diag" data-cmd="?" type="button"><strong>Help</strong><span>Print firmware command reference</span></button>
+      <button class="action motion" data-motion="t" type="button"><strong>Slow seek top</strong><span>Guarded ramp · up to 800 pps</span></button>
+      <button class="action motion" data-motion="f" type="button"><strong>Fast seek top</strong><span>Guarded 400 mm envelope · 1600 pps</span></button>
+      <button class="action motion" data-motion="d" data-requires="top" type="button"><strong>Home bottom</strong><span>Requires pressed top + boot safety</span></button>
+      <button class="action motion" data-motion="u" data-requires="bottom" type="button"><strong>Travel to top</strong><span>Requires pressed, homed bottom</span></button>
+      <button id="stopBtn" class="action stop" type="button"><strong>STOP · ESC</strong><span>Immediate serial x · no confirmation</span></button>
+    </div>
+    <div class="arm-row">
+      <button id="armBtn" class="btn green" type="button">Arm session</button>
+      <div id="armCopy" class="arm-copy">Arming only unlocks the browser controls. Firmware limits and references remain authoritative.</div>
+    </div>
+    <div class="manual-row">
+      <button id="manualModeBtn" class="btn red" type="button">Enable manual test</button>
+      <div class="manual-copy">This gate unlocks the dedicated press-and-hold zone below. D11/D12 checks and Stop cannot be disabled.</div>
+    </div>
+    <section class="manual-zone" aria-label="Manual motor control zone">
+      <div class="manual-zone-head"><span class="label">MANUAL MOTOR ZONE</span><span class="tag">HOLD TO MOVE</span></div>
+      <div class="manual-zone-copy">Press and hold a direction to move; release anywhere to send Stop. Use 10 PPS crawl mode to watch the marked motor shaft. Firmware applies both a 10-second and approximately 4 mm cap.</div>
+      <label class="speed-row" for="manualSpeed"><span>MANUAL SPEED</span><input id="manualSpeed" type="range" min="10" max="400" step="10" value="100"><output id="manualSpeedValue" class="speed-value">100 PPS</output></label>
+      <div class="manual-hold-grid">
+        <button class="manual-hold" data-hold="U" type="button" disabled><strong>HOLD · UP</strong><span>RELEASE TO STOP</span></button>
+        <button class="manual-hold" data-hold="D" type="button" disabled><strong>HOLD · DOWN</strong><span>RELEASE TO STOP</span></button>
+      </div>
+      <div class="manual-zone-foot">References clear at move start. For diagnosis, mark the motor shaft and coupling; physical directional-limit checks and the 24 V disconnect remain authoritative.</div>
+    </section>
+    <form id="leadForm" class="lead-row">
+      <input id="leadInput" type="number" min="0.0001" max="50" step="0.0001" value="3.8000" aria-label="Effective drive travel in millimeters per revolution">
+      <button id="leadBtn" class="btn" type="submit">Set lead</button>
+    </form>
+  </section>
+
+  <aside class="card console-card">
+    <div class="card-head console-head"><span class="label">DATA STREAM</span><div class="console-tools"><button id="exportBtn" class="btn" type="button">CSV</button><button id="clearBtn" class="btn gray" type="button">CLR</button></div></div>
+    <div class="stream-meta"><span>ASCII · 115200 · 8N1</span><span id="lineCount">0 LINES</span></div>
+    <div id="log" class="log" role="log" aria-label="Raw serial data stream"></div>
+  </aside>
+
+  <section class="card trend-card">
+    <div class="card-head">
+      <span class="label">60 SECOND TREND</span>
+      <div class="legend"><span><i class="step"></i>STEP MM</span><span><i class="encoder"></i>ENCODER REL MM</span><span><i class="force"></i>FORCE N</span></div>
+    </div>
+    <div class="trend-wrap"><canvas id="trend" aria-label="Live telemetry trend chart"></canvas></div>
+  </section>
+</main>
+
+<footer class="footer">DELTA ROBOTICS ◇ AEROFLEX TEST-RIG ◇ BOTTOM ZERO IS AUTHORITATIVE ◇ WEB SERIAL</footer>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const MAX_RECORDS=30000,MAX_LOG_LINES=500,STALE_MS=1200,TREND_MS=60000,TRAVEL_MAX_MM=400;
+const numericFields=new Set(["v","ms","pps","sent","req","pv","posp","posmm","enc","inv","top","bot","safe","bref","tref","ea","eb","ah","bh","lead","fv","fn"]);
+const rig={
+  v:0,ms:0,mot:"idle",dir:"none",pps:0,sent:0,req:0,pv:0,posp:0,posmm:NaN,
+  enc:0,inv:0,top:0,bot:0,safe:0,bref:0,tref:0,ea:0,eb:0,ah:0,bh:0,
+  lead:3.8,fs:"unavail",fv:0,fn:NaN,peak:NaN
+};
+let port=null,reader=null,writer=null,reading=false,lineBuffer="",demo=false,demoTimer=null,demoStarted=0;
+let armed=false,manualTest=false,manualHolding=false,lastTelemetryHost=0,protocol="none",records=[],samples=[],logLines=0,lastRaw="",lastEncoderAtMoveStart=0;
+
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function finite(v){return Number.isFinite(Number(v))}
+function fmt(v,d=0){return finite(v)?Number(v).toFixed(d):"—"}
+function motionActive(){return rig.mot!=="idle"}
+function connected(){return !!(port||demo)}
+function fresh(){return connected()&&performance.now()-lastTelemetryHost<STALE_MS}
+function parseTokens(line){
+  const out={};
+  for(const token of line.trim().split(/\s+/).slice(1)){
+    const at=token.indexOf("=");if(at<1)continue;
+    const key=token.slice(0,at),raw=token.slice(at+1);
+    out[key]=numericFields.has(key)?Number(raw):raw;
+  }
+  return out;
+}
+function mergeFrame(frame){
+  for(const [key,value] of Object.entries(frame)){
+    if(key in rig)rig[key]=value;
+  }
+}
+function addRecord(kind,line,frame={}){
+  records.push({iso:new Date().toISOString(),host_ms:Date.now(),kind,raw:line,...rig,...frame});
+  if(records.length>MAX_RECORDS)records.splice(0,records.length-MAX_RECORDS);
+}
+function addSample(){
+  const host=performance.now();
+  const encoderMm=Number(rig.enc)*Number(rig.lead||3.8)/1600;
+  samples.push({host,device_ms:rig.ms,position:rig.pv?Number(rig.posmm):NaN,encoder:encoderMm,force:rig.fv?Number(rig.fn):NaN});
+  const cutoff=host-TREND_MS;
+  while(samples.length&&samples[0].host<cutoff)samples.shift();
+}
+function log(line,cls=""){
+  const el=$("log"),atBottom=el.scrollTop+el.clientHeight>=el.scrollHeight-8;
+  const span=document.createElement("span");if(cls)span.className=cls;span.textContent=line+"\n";el.appendChild(span);
+  while(el.childNodes.length>MAX_LOG_LINES)el.removeChild(el.firstChild);
+  if(atBottom)el.scrollTop=el.scrollHeight;
+  $("lineCount").textContent=`${++logLines} LINES`;
+}
+function handleLine(line){
+  if(!line)return;lastRaw=line;
+  if(line.startsWith("@T ")){
+    const frame=parseTokens(line);mergeFrame(frame);protocol="v1";lastTelemetryHost=performance.now();
+    if(rig.fv&&finite(rig.fn))rig.peak=finite(rig.peak)?Math.max(rig.peak,Number(rig.fn)):Number(rig.fn);
+    addSample();addRecord("telemetry",line,frame);log(line,"tele");
+  }else if(line.startsWith("@D ")){
+    const frame=parseTokens(line);mergeFrame(frame);protocol="v1";lastTelemetryHost=performance.now();
+    addRecord("diagnostic",line,frame);log(line,"tele");
+  }else if(line.startsWith("@E ")){
+    const frame=parseTokens(line);protocol="v1";addRecord("event",line,frame);
+    log(line,frame.level==="error"?"error":frame.level==="warn"?"warn":"event");
+  }else{
+    parseLegacy(line);addRecord("raw",line);log(line,line.includes("ERROR:")||line.includes("REFUSED:")?"error":line.includes("WARNING:")||line.includes("STOP:")?"warn":"");
+  }
+  updateAll();
+}
+function parseLegacy(line){
+  let m,hit=false;
+  if(m=line.match(/^TOP switch: (PRESSED|released)/)){rig.top=m[1]==="PRESSED"?1:0;hit=true}
+  if(m=line.match(/^BOTTOM switch: (PRESSED|released)/)){rig.bot=m[1]==="PRESSED"?1:0;hit=true}
+  if(line.includes("BOTTOM safety check PASSED")){rig.safe=1;hit=true}
+  if(m=line.match(/Bottom zero reference: (KNOWN|NOT SET)/)){rig.bref=m[1]==="KNOWN"?1:0;hit=true}
+  if(m=line.match(/Top reference: (KNOWN|NOT SET)/)){rig.tref=m[1]==="KNOWN"?1:0;hit=true}
+  if(m=line.match(/Lead \(mm\/rev\): ([\d.]+)/)){rig.lead=Number(m[1]);hit=true}
+  if(m=line.match(/Tracked position above bottom \(pulses\): (-?\d+)/)){rig.posp=Number(m[1]);rig.pv=1;hit=true}
+  if(m=line.match(/Tracked position above bottom \(step-estimated mm\): ([-\d.]+)/)){rig.posmm=Number(m[1]);rig.pv=1;hit=true}
+  if(m=line.match(/Quadrature count: (-?\d+)/)){rig.enc=Number(m[1]);hit=true}
+  if(m=line.match(/A edge count: (\d+)/)){rig.ea=Number(m[1]);hit=true}
+  if(m=line.match(/B edge count: (\d+)/)){rig.eb=Number(m[1]);hit=true}
+  if(m=line.match(/Invalid two-bit transitions: (\d+)/)){rig.inv=Number(m[1]);hit=true}
+  if(hit){protocol=protocol==="v1"?"v1":"legacy";lastTelemetryHost=performance.now()}
+}
+function setPill(id,on,yes,no,warning=false){
+  const el=$(id);el.textContent=on?yes:no;el.className="pill "+(on?"ok":warning?"warn":"bad");
+}
+function updateConnection(){
+  const f=fresh(),dot=$("connDot");
+  dot.className="dot "+(f?"live":connected()?"stale":"");
+  $("connText").textContent=f?(demo?"DEMO LIVE":"CONNECTED · 115200"):connected()?"LINK STALE":"OFFLINE";
+  $("protocolText").textContent=protocol==="v1"?"PROTOCOL V1":protocol==="legacy"?"LEGACY · LIMITED":"NO DATA";
+  $("connectBtn").textContent=port?"Disconnect":"Connect";
+  $("connectBtn").classList.toggle("solid",!port);
+  $("demoBtn").textContent=demo?"Demo · on":"Demo";
+  $("demoBtn").classList.toggle("solid",demo);
+}
+function updateAlert(){
+  const box=$("alert"),text=$("alertText");let msg="",danger=false;
+  if(!connected())msg="NO DEVICE CONNECTED — MOTION CONTROLS LOCKED";
+  else if(!fresh())msg="TELEMETRY STALE — MOTION CONTROLS LOCKED";
+  else if(rig.top&&rig.bot){msg="IMPOSSIBLE LIMIT STATE — TOP AND BOTTOM BOTH PRESSED";danger=true}
+  else if(motionActive())msg=`MOTION ACTIVE · ${rig.mot.toUpperCase()} · ESC OR STOP SENDS x IMMEDIATELY`;
+  else if(!rig.safe)msg="BOTTOM SWITCH BOOT VALIDATION REQUIRED — PRESS THEN RELEASE D11";
+  else if(!rig.bref)msg="POSITION NOT REFERENCED — BOTTOM HOME REQUIRED FOR ABSOLUTE STEP ESTIMATE";
+  else msg="RIG LINK HEALTHY — FIRMWARE INTERLOCKS AUTHORITATIVE";
+  if(manualTest&&connected()&&fresh()&&!motionActive())msg="MANUAL TEST ENABLED — PRESS AND HOLD TO MOVE; LIMITS + STOP REMAIN HARD";
+  box.classList.toggle("danger",danger||motionActive());text.textContent=msg;
+}
+function updatePosition(){
+  const valid=!!rig.pv&&finite(rig.posmm),pos=valid?Number(rig.posmm):0,travel=clamp(pos/TRAVEL_MAX_MM,0,1);
+  $("positionValue").textContent=valid?pos.toFixed(3):"—";$("positionValue").classList.toggle("invalid",!valid);
+  $("positionValidity").textContent=valid?"BOTTOM ZERO VALID":"NOT REFERENCED";
+  const carriage=$("carriage");carriage.style.setProperty("--travel",`${7+travel*86}%`);carriage.classList.toggle("invalid",!valid);carriage.textContent=valid?`${pos.toFixed(1)} MM`:"UNKNOWN";
+  $("motionName").textContent=String(rig.mot).replaceAll("_"," ");$("motionName").classList.toggle("active",motionActive());
+  $("directionText").textContent=`DIR · ${String(rig.dir).toUpperCase()}`;
+  $("moveProgress").style.width=rig.req?`${clamp(Number(rig.sent)/Number(rig.req)*100,0,100)}%`:"0%";
+  $("pulseRate").textContent=fmt(rig.pps);$("pulseCount").textContent=fmt(rig.sent);$("requestedPulses").textContent=fmt(rig.req);
+  $("topMarker").classList.toggle("active",!!rig.top);$("bottomMarker").classList.toggle("active",!!rig.bot);
+}
+function updateValues(){
+  $("deviceTime").textContent=finite(rig.ms)?`${(Number(rig.ms)/1000).toFixed(1)}s`:"—";
+  $("leadValue").textContent=fmt(rig.lead,4);if(document.activeElement!==$("leadInput"))$("leadInput").value=finite(rig.lead)?Number(rig.lead).toFixed(4):"3.8000";
+  $("sampleCount").textContent=records.length.toLocaleString();
+  $("freshnessTag").textContent=fresh()?"LIVE · 5 HZ":"STALE";
+  setPill("topState",!!rig.top,"PRESSED","RELEASED",true);setPill("bottomState",!!rig.bot,"PRESSED","RELEASED",true);
+  setPill("safeState",!!rig.safe,"PASSED","NOT PASSED");setPill("bottomRef",!!rig.bref,"KNOWN","NOT SET");setPill("topRef",!!rig.tref,"KNOWN","NOT SET");
+  $("channelA").classList.toggle("on",!!rig.ah);$("channelB").classList.toggle("on",!!rig.bh);
+  $("aState").textContent=rig.ah?"HIGH":"LOW";$("bState").textContent=rig.bh?"HIGH":"LOW";
+  $("aEdges").textContent=`${fmt(rig.ea)} EDGES`;$("bEdges").textContent=`${fmt(rig.eb)} EDGES`;
+  $("encoderCount").textContent=fmt(rig.enc);$("encoderMm").textContent=finite(rig.enc)&&finite(rig.lead)?(Number(rig.enc)*Number(rig.lead)/1600).toFixed(3):"—";
+  $("invalidCount").textContent=fmt(rig.inv);
+  const ratio=Number(rig.sent)>0?Math.abs(Number(rig.enc)-lastEncoderAtMoveStart)/Number(rig.sent):NaN;$("encoderRatio").textContent=finite(ratio)?ratio.toFixed(4):"—";
+  const forceValid=!!rig.fv&&finite(rig.fn);$("forceTag").textContent=forceValid?"VALID":"NO SIGNAL";$("forceTag").style.color=forceValid?"var(--green)":"";
+  $("forceState").textContent=forceValid?"FORCE CHANNEL ACTIVE":"UNAVAILABLE — HX711 DT REPAIR REQUIRED";
+  $("forceValue").textContent=forceValid?Number(rig.fn).toFixed(2):"—";$("peakForce").textContent=finite(rig.peak)?Number(rig.peak).toFixed(2):"—";
+}
+function updateControls(){
+  const canWrite=connected(),ready=fresh()&&!motionActive(),canMove=ready&&armed;
+  document.querySelectorAll(".diag").forEach(b=>b.disabled=!canWrite||motionActive());
+  document.querySelectorAll(".motion").forEach(b=>{
+    let ok=canMove;if(b.dataset.requires==="top")ok=ok&&!!rig.safe&&!!rig.tref&&!!rig.top&&!rig.bot;
+    if(b.dataset.requires==="bottom")ok=ok&&!!rig.safe&&!!rig.bref&&!!rig.bot&&!rig.top;b.disabled=!ok;
+  });
+  document.querySelectorAll(".manual-hold").forEach(b=>b.disabled=!(canMove&&manualTest)&&!manualHolding);
+  $("stopBtn").disabled=!canWrite;$("armBtn").disabled=!ready;$("armBtn").textContent=armed?"Disarm":"Arm session";$("armBtn").classList.toggle("solid",armed);
+  $("armTag").textContent=armed?"ARMED":"DISARMED";$("armTag").style.color=armed?"var(--green)":"";
+  $("armCopy").classList.toggle("live",armed);$("leadBtn").disabled=!ready||armed;
+  $("manualModeBtn").disabled=!(ready&&armed);$("manualModeBtn").textContent=manualTest?"Manual test · on":"Enable manual test";$("manualModeBtn").classList.toggle("solid",manualTest);$("manualSpeedValue").textContent=`${$("manualSpeed").value} PPS`;
+}
+function updateAll(){updateConnection();updateAlert();updatePosition();updateValues();updateControls();drawTrend()}
+
+async function openPort(selected){
+  stopDemo();port=selected;await port.open({baudRate:115200});
+  const decoder=new TextDecoderStream();port.readable.pipeTo(decoder.writable).catch(()=>{});
+  reader=decoder.readable.getReader();const encoder=new TextEncoderStream();encoder.readable.pipeTo(port.writable).catch(()=>{});
+  writer=encoder.writable.getWriter();reading=true;armed=false;protocol="none";log("# connected · awaiting telemetry","event");readLoop();updateAll();
+}
+async function connect(){
+  if(!("serial" in navigator)){log("# Web Serial unavailable — use desktop Chrome or Edge","error");return}
+  try{await openPort(await navigator.serial.requestPort())}catch(error){log(`# connect failed · ${error.message}`,"error");port=null;updateAll()}
+}
+async function autoConnect(){
+  if(!("serial" in navigator))return;
+  try{const ports=await navigator.serial.getPorts();if(ports.length)await openPort(ports[0])}catch{port=null;updateAll()}
+}
+async function disconnect(){
+  reading=false;armed=false;manualTest=false;manualHolding=false;try{await reader?.cancel()}catch{}try{reader?.releaseLock()}catch{}try{writer?.releaseLock()}catch{}try{await port?.close()}catch{}
+  port=null;reader=null;writer=null;protocol="none";lastTelemetryHost=0;updateAll();
+}
+async function readLoop(){
+  while(reading){let result;try{result=await reader.read()}catch{break}if(result.done)break;lineBuffer+=result.value;
+    let at;while((at=lineBuffer.indexOf("\n"))>=0){const line=lineBuffer.slice(0,at).replace(/\r$/,"");lineBuffer=lineBuffer.slice(at+1);handleLine(line)}
+  }
+  if(reading)await disconnect();
+}
+async function send(command){
+  if(demo){log(`» ${command} · demo`,"sent");demoCommand(command);return}
+  if(!writer)return;try{await writer.write(command);log(`» ${command}`,"sent")}catch(error){log(`# send failed · ${error.message}`,"error")}
+}
+function confirmMotion(command){
+  const names={t:"SLOW SEEK TOP",f:"FAST SEEK TOP",d:"HOME BOTTOM FROM TOP",u:"TRAVEL BOTTOM TO TOP"};
+  return window.confirm(`${names[command]}\n\nVerify the rig is unloaded, continuously supervised, and the 24 V disconnect is accessible.\n\nFirmware interlocks remain authoritative. Send this motion command?`);
+}
+
+function stopManualHold(){
+  if(!manualHolding)return;manualHolding=false;document.querySelectorAll(".manual-hold").forEach(b=>b.classList.remove("holding"));send("x");updateAll();
+}
+function immediateStop(){const wasHolding=manualHolding;stopManualHold();if(!wasHolding)send("x")}
+
+function startDemo(){
+  if(port)return;demo=true;armed=false;protocol="v1";records=[];samples=[];rig.peak=NaN;demoStarted=performance.now();lastTelemetryHost=performance.now();
+  clearInterval(demoTimer);demoTimer=setInterval(demoStep,200);demoStep();log("# demo started · 26 second commissioning loop","event");updateAll();
+}
+function stopDemo(){demo=false;armed=false;manualTest=false;manualHolding=false;clearInterval(demoTimer);demoTimer=null;protocol=port?"none":"none";lastTelemetryHost=0;updateAll()}
+function demoFrame(values){
+  Object.assign(rig,values,{v:1,ms:Math.round(performance.now()-demoStarted),fs:"unavail",fv:0,fn:NaN});
+  const line=`@T v=1 ms=${rig.ms} mot=${rig.mot} dir=${rig.dir} pps=${rig.pps} sent=${Math.round(rig.sent)} req=${Math.round(rig.req)} pv=${rig.pv} posp=${Math.round(rig.posp)} posmm=${finite(rig.posmm)?Number(rig.posmm).toFixed(3):"nan"} enc=${Math.round(rig.enc)} inv=${rig.inv} top=${rig.top} bot=${rig.bot} safe=${rig.safe} bref=${rig.bref} tref=${rig.tref}`;
+  handleLine(line);
+  if(rig.ms%1000<210)handleLine(`@D v=1 ms=${rig.ms} ea=${Math.abs(Math.round(rig.enc/2))} eb=${Math.abs(Math.round(rig.enc/2-3))} ah=${Math.floor(rig.ms/200)%2} bh=${Math.floor(rig.ms/200+1)%2} lead=3.8000 fs=unavail fv=0 fn=nan`);
+}
+function demoStep(){
+  if(!demo)return;const t=((performance.now()-demoStarted)/1000)%26;let f={mot:"idle",dir:"none",pps:0,sent:0,req:0,pv:0,posp:0,posmm:NaN,enc:0,inv:0,top:0,bot:0,safe:0,bref:0,tref:0};
+  if(t<1.5)f={...f,bot:0};
+  else if(t<2.3)f={...f,bot:1};
+  else if(t<3.4)f={...f,safe:1};
+  else if(t<7){const p=(t-3.4)/3.6;f={...f,safe:1,mot:"top_fast",dir:"up",pps:1600,sent:p*168421,req:168421,enc:-p*250164}}
+  else if(t<8){f={...f,safe:1,top:1,tref:1,enc:-250164}}
+  else if(t<12){const p=(t-8)/4;f={...f,safe:1,mot:"down_fast",dir:"down",pps:1600,sent:p*151579,req:168421,enc:-250164+p*225162}}
+  else if(t<13){f={...f,safe:1,bot:1,bref:1,pv:1,posp:0,posmm:0,enc:-25002}}
+  else if(t<19){const p=(t-13)/6,pos=p*360;f={...f,safe:1,bref:1,pv:1,mot:p<.9?"up_fast":"up_slow",dir:"up",pps:p<.9?1600:250,sent:p*151579,req:168421,posp:p*151579,posmm:pos,enc:-25002-p*225220}}
+  else if(t<22){f={...f,safe:1,bref:1,tref:1,top:1,pv:1,posp:151579,posmm:360,enc:-250222}}
+  else{f={...f,safe:1,bref:1,pv:1,posp:151579,posmm:360,enc:-250222};if(t<22.25)handleLine("@E v=1 ms=22000 level=warn code=motion_refused reason=bottom_not_pressed")}
+  demoFrame(f);
+}
+function demoCommand(command){
+  if(command==="x"){rig.mot="idle";rig.dir="none";rig.pps=0;armed=false;handleLine(`@E v=1 ms=${rig.ms} level=warn code=motion_aborted reason=serial_stop`);updateAll();return}
+  if(["s","e","z","?"].includes(command)){handleLine(`@E v=1 ms=${rig.ms} level=info code=demo_command reason=${command==="?"?"help":command}`);return}
+  if(command.startsWith("l")){const value=Number(command.slice(1));rig.lead=value;rig.bref=0;rig.tref=0;rig.pv=0;handleLine(`@E v=1 ms=${rig.ms} level=info code=lead_changed reason=references_cleared`);return}
+  demoStarted=performance.now()-(command==="t"||command==="f"?3.4:command==="d"?8:13)*1000;lastEncoderAtMoveStart=rig.enc;
+}
+function csvCell(value){const s=String(value??"");return /[",\n]/.test(s)?`"${s.replaceAll('"','""')}"`:s}
+function exportCsv(){
+  if(!records.length){log("# no telemetry retained","warn");return}
+  const columns=["iso","host_ms","kind","ms","mot","dir","pps","sent","req","pv","posp","posmm","enc","ea","eb","ah","bh","inv","top","bot","safe","bref","tref","lead","fs","fv","fn","level","code","reason","raw"];
+  const rows=[columns.join(",")];for(const record of records)rows.push(columns.map(key=>csvCell(record[key])).join(","));
+  const blob=new Blob([rows.join("\n")],{type:"text/csv"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download=`aeroflex_test_rig_${new Date().toISOString().replace(/[:.]/g,"-").slice(0,19)}.csv`;a.click();URL.revokeObjectURL(url);log(`# exported ${records.length} records`,"event");
+}
+function drawTrend(){
+  const canvas=$("trend"),rect=canvas.getBoundingClientRect(),ratio=devicePixelRatio||1,w=Math.max(1,rect.width),h=Math.max(1,rect.height);
+  if(canvas.width!==Math.round(w*ratio)||canvas.height!==Math.round(h*ratio)){canvas.width=Math.round(w*ratio);canvas.height=Math.round(h*ratio)}
+  const c=canvas.getContext("2d");c.setTransform(ratio,0,0,ratio,0,0);c.clearRect(0,0,w,h);c.font="9px "+getComputedStyle(document.body).fontFamily;
+  const left=34,right=w-10,top=8,bottom=h-20;c.strokeStyle="#3e3e3e";c.fillStyle="#777";c.lineWidth=1;
+  for(let mm=0;mm<=400;mm+=100){const y=bottom-(mm/400)*(bottom-top);c.beginPath();c.moveTo(left,y);c.lineTo(right,y);c.stroke();c.fillText(String(mm),4,y+3)}
+  for(let s=0;s<=60;s+=15){const x=right-(s/60)*(right-left);c.fillText(s===0?"NOW":`-${s}s`,x-12,h-5)}
+  if(samples.length<2)return;const now=performance.now(),x=t=>left+clamp((t-(now-TREND_MS))/TREND_MS,0,1)*(right-left),y=v=>bottom-(clamp(v,0,400)/400)*(bottom-top);
+  const line=(key,color)=>{c.strokeStyle=color;c.lineWidth=1.7;c.beginPath();let started=false;for(const sample of samples){const value=sample[key];if(!finite(value))continue;started?c.lineTo(x(sample.host),y(Number(value))):c.moveTo(x(sample.host),y(Number(value)));started=true}if(started)c.stroke()};
+  line("position","#ff7448");line("encoder","#65c8d8");
+}
+
+$("connectBtn").onclick=()=>port?disconnect():connect();
+$("demoBtn").onclick=()=>demo?stopDemo():startDemo();
+$("armBtn").onclick=()=>{if(!fresh()||motionActive())return;armed=!armed;if(!armed)manualTest=false;updateAll()};
+$("manualModeBtn").onclick=()=>{if(!fresh()||motionActive()||!armed)return;if(!manualTest&&window.prompt("Type MOTOR TEST to enable the bounded manual jog controls.")!=="MOTOR TEST")return;manualTest=!manualTest;updateAll()};
+$("stopBtn").onclick=immediateStop;
+$("exportBtn").onclick=exportCsv;
+$("clearBtn").onclick=()=>{$("log").textContent="";logLines=0;$("lineCount").textContent="0 LINES"};
+document.querySelectorAll("[data-cmd]").forEach(button=>button.onclick=()=>send(button.dataset.cmd));
+document.querySelectorAll("[data-motion]").forEach(button=>button.onclick=()=>{const command=button.dataset.motion;if(confirmMotion(command)){lastEncoderAtMoveStart=Number(rig.enc);send(command)}});
+$("manualSpeed").oninput=()=>updateAll();
+document.querySelectorAll("[data-hold]").forEach(button=>{
+  button.addEventListener("pointerdown",event=>{if(button.disabled||manualHolding)return;event.preventDefault();manualHolding=true;button.classList.add("holding");button.setPointerCapture?.(event.pointerId);lastEncoderAtMoveStart=Number(rig.enc);send(`j${button.dataset.hold},${$("manualSpeed").value}\n`);updateAll()});
+  button.addEventListener("pointerup",stopManualHold);button.addEventListener("pointercancel",stopManualHold);button.addEventListener("lostpointercapture",stopManualHold);
+});
+$("leadForm").onsubmit=event=>{event.preventDefault();const value=Number($("leadInput").value);if(!finite(value)||value<=0||value>50)return;if(window.confirm(`Set effective drive travel to ${value.toFixed(4)} mm/rev?\n\nThis clears both position references and requires re-homing.`))send(`l${value.toFixed(4)}\n`)};
+window.addEventListener("keydown",event=>{if(event.key==="Escape"&&connected()){event.preventDefault();immediateStop()}});
+window.addEventListener("pointerup",stopManualHold);window.addEventListener("pointercancel",stopManualHold);window.addEventListener("blur",stopManualHold);document.addEventListener("visibilitychange",()=>{if(document.hidden)stopManualHold()});
+window.addEventListener("resize",drawTrend);
+setInterval(()=>{if((armed||manualTest)&&(!fresh()||motionActive())){armed=false;manualTest=false}if(!armed)manualTest=false;updateAll()},250);
+if(!("serial" in navigator))log("# Web Serial requires desktop Chrome or Edge","warn");
+updateAll();autoConnect();
+</script>
+</body>
+</html>
