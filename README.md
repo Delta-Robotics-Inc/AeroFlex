@@ -56,8 +56,10 @@ Before pressurizing anything, read the validation and safety notes in
 | [`docs/theory.md`](docs/theory.md) | Force-pressure equation, stroke theory, design references |
 | [`docs/components.md`](docs/components.md) | BOM: fittings, threads, regulators, valves, CO2, sourcing links |
 | [`docs/background.md`](docs/background.md) | Why artificial muscles have not gone mainstream, and what changes that |
+| [`docs/test-rig-electronics.md`](docs/test-rig-electronics.md) | As-built electronics map and commissioning prerequisites for the tensile-test rig |
 | [`manufacturing/`](manufacturing/) | Muscle BOM, assembly process, and airtight manifold printing |
 | [`apps/hud/`](apps/hud/) | Zero-install browser telemetry HUD for muscle controllers (Web Serial), with a documented protocol any Arduino can speak |
+| [`firmware/`](firmware/) | Safe PlatformIO commissioning baseline for the Arduino Uno R4 Minima test rig |
 | [`research/`](research/) | Cited research library: PAM modeling, sensing, fabrication methods, vendor surveys |
 | [`datasheets/`](datasheets/) | Vendor spec-sheet index with source links |
 
