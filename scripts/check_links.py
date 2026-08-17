@@ -27,7 +27,10 @@ for root, dirs, files in os.walk(REPO):
             url = match.group(1)
             if url.startswith(("http://", "https://", "mailto:", "#")):
                 continue
-            target = urllib.parse.unquote(url.split("#")[0])
+            # A relative GitHub download link may carry a query string such as
+            # `?raw=1`. The query controls how GitHub serves the file; it is
+            # not part of the path that must exist in this checkout.
+            target = urllib.parse.unquote(urllib.parse.urlsplit(url).path)
             if not target:
                 continue
             resolved = os.path.normpath(os.path.join(os.path.dirname(path), target))

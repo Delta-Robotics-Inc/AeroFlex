@@ -11,16 +11,16 @@ in [`photos/`](photos/); the two temporary-motor photos are retained at this
 folder's top level under their descriptive filenames.
 
 For a one-click handoff, download
-[`aeroflex-test-rig-reference-photo-set-20260817.zip`](aeroflex-test-rig-reference-photo-set-20260817.zip).
+[`aeroflex-test-rig-reference-photo-set-20260817.zip`](aeroflex-test-rig-reference-photo-set-20260817.zip?raw=1).
 It contains all 28 original JPGs and `photo-downloads.md`.
 
 | File | Purpose | SHA-256 |
 |---|---|---|
-| `motor-sm42ht47-1684b-label-and-pulley.jpg` | Temporary Smart Automation SM42HT47-1684B motor label, body, shaft, and pulley. | `87A726064FB8E19068235EB5D155E7F3256E2E7A504C48D7F0AD3F0069BD1D02`[...]
+| `motor-sm42ht47-1684b-label-and-pulley.jpg` | Temporary Smart Automation SM42HT47-1684B motor label, body, shaft, and pulley. | `87A726064FB8E19068235EB5D155E7F3256E2E7A504C48D7F0AD3F0069BD1D02` |
 | `motor-sm42ht47-1684b-leads.jpg` | Temporary motor's four un-terminated leads. | `3ADBA8247F0D4E226450626493350CCCA4E14AA6F1A3275B0B8990991FF8BBB6` |
-| [`aeroflex-test-rig-source-c8e5bc8-20260817.zip`](aeroflex-test-rig-source-c8e5bc8-20260817.zip) | Source/documentation snapshot produced from commit `c8e5bc8`. | `74D69E56C396A7583B9C0C77[...]
-| [`aeroflex-test-rig-machine-artifacts-20260817.zip`](aeroflex-test-rig-machine-artifacts-20260817.zip) | Generated dashboard build and PlatformIO caches from the commissioning workstation.[...]
-| [`aeroflex-test-rig-reference-photo-set-20260817.zip`](aeroflex-test-rig-reference-photo-set-20260817.zip) | All 28 original reference photos plus `photo-downloads.md`. | `7AF783DF26648A6D[...]
+| [`aeroflex-test-rig-source-c8e5bc8-20260817.zip`](aeroflex-test-rig-source-c8e5bc8-20260817.zip?raw=1) | Source/documentation snapshot produced from commit `c8e5bc8`. | `74D69E56C396A7583B9C0C770C89A142742D2279E2CEC93F6FE94D8173F8C3C7` |
+| [`aeroflex-test-rig-machine-artifacts-20260817.zip`](aeroflex-test-rig-machine-artifacts-20260817.zip?raw=1) | Generated dashboard build and PlatformIO caches from the commissioning workstation. | `B44DDA07348EC307B00FBEAA3B04BCB945DE428A0AD40070AFC86567CA28E9DD` |
+| [`aeroflex-test-rig-reference-photo-set-20260817.zip`](aeroflex-test-rig-reference-photo-set-20260817.zip?raw=1) | All 28 original reference photos plus `photo-downloads.md`. | `7AF783DF26648A6D640449B2F0A5C241DA3DB19E78E2D5D7B1D630550C1F2132` |
 
 The artifacts ZIP is intentionally a separate review record. Do not use it as
 the primary build input and do not edit its contents in place; rebuild the
