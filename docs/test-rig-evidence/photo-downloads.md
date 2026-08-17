@@ -4,6 +4,8 @@ This is the complete 28-photo project reference set currently preserved in the
 repository. Each **Download** link points to the original JPG. The labels retain
 the original camera filename where it is part of the commissioning record.
 
+**Prefer one file?** [Download the complete 28-photo reference set (ZIP)](aeroflex-test-rig-reference-photo-set-20260817.zip?raw=1).
+
 ## Physical layout
 
 | Reference | Download |
