@@ -406,3 +406,22 @@ Electronics references: `IMG_3167.jpg`, `IMG_3165.jpg`, `IMG_3162.jpg`,
 Component-source references: `protoparts-loadcell-encoder.zip` (load-cell and
 encoder definitions, pinouts, and source captures) and
 `stepperonline-nema23-protoparts.zip` (motor definition and datasheet captures).
+
+### Repository evidence assets
+
+The following assets are stored with this document so a reviewer can inspect
+the supplied temporary-motor evidence and retrieve the project handoff bundles
+without relying on an individual workstation. File descriptions and SHA-256
+checksums are recorded in
+[`test-rig-evidence/README.md`](test-rig-evidence/README.md).
+
+| Asset | Contents |
+|---|---|
+| [Motor label and pulley](test-rig-evidence/motor-sm42ht47-1684b-label-and-pulley.jpg) | Photo of the Smart Automation `SM42HT47-1684B` temporary stepper motor, its label, double shaft, and fitted pulley. |
+| [Motor leads](test-rig-evidence/motor-sm42ht47-1684b-leads.jpg) | Photo of the temporary motor's four loose leads before driver termination. |
+| [Source snapshot (ZIP)](test-rig-evidence/aeroflex-test-rig-source-c8e5bc8-20260817.zip) | Complete committed source/documentation handoff snapshot at commit `c8e5bc8`. |
+| [Machine artifacts (ZIP)](test-rig-evidence/aeroflex-test-rig-machine-artifacts-20260817.zip) | Generated dashboard build and PlatformIO build/cache trees from the commissioning workstation. It is reference evidence, not the preferred way to reproduce a build. |
+
+[![Smart Automation SM42HT47-1684B label and pulley](test-rig-evidence/motor-sm42ht47-1684b-label-and-pulley.jpg)](test-rig-evidence/motor-sm42ht47-1684b-label-and-pulley.jpg)
+
+[![Smart Automation SM42HT47-1684B loose leads](test-rig-evidence/motor-sm42ht47-1684b-leads.jpg)](test-rig-evidence/motor-sm42ht47-1684b-leads.jpg)
