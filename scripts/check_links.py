@@ -25,12 +25,18 @@ for root, dirs, files in os.walk(REPO):
             text = fh.read()
         for match in LINK_RE.finditer(text):
             url = match.group(1)
+            # Skip external links, mailto:, and in-page anchors
             if url.startswith(("http://", "https://", "mailto:", "#")):
                 continue
-            target = urllib.parse.unquote(url.split("#")[0])
+            # Normalize: remove fragment and query parameters (e.g., ?raw=1)
+            target = urllib.parse.unquote(url.split("#")[0].split("?", 1)[0])
             if not target:
                 continue
-            resolved = os.path.normpath(os.path.join(os.path.dirname(path), target))
+            # If the link begins with a slash, treat it as repo-root-relative
+            if target.startswith("/"):
+                resolved = os.path.normpath(os.path.join(REPO, target.lstrip("/")))
+            else:
+                resolved = os.path.normpath(os.path.join(os.path.dirname(path), target))
             if not os.path.exists(resolved):
                 line = text[: match.start()].count("\n") + 1
                 broken.append((os.path.relpath(path, REPO), line, url))
