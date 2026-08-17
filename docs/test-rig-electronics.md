@@ -422,9 +422,9 @@ All 28 project reference photos now have individual download links in the
 |---|---|
 | [Motor label and pulley](test-rig-evidence/motor-sm42ht47-1684b-label-and-pulley.jpg) | Photo of the Smart Automation `SM42HT47-1684B` temporary stepper motor, its label, double shaft, and fitted pulley. |
 | [Motor leads](test-rig-evidence/motor-sm42ht47-1684b-leads.jpg) | Photo of the temporary motor's four loose leads before driver termination. |
-| [Complete reference photo set (ZIP)](test-rig-evidence/aeroflex-test-rig-reference-photo-set-20260817.zip) | All 28 original project reference photos plus the individual-download index. |
-| [Source snapshot (ZIP)](test-rig-evidence/aeroflex-test-rig-source-c8e5bc8-20260817.zip) | Complete committed source/documentation handoff snapshot at commit `c8e5bc8`. |
-| [Machine artifacts (ZIP)](test-rig-evidence/aeroflex-test-rig-machine-artifacts-20260817.zip) | Generated dashboard build and PlatformIO build/cache trees from the commissioning workstation. It is reference evidence, not the preferred way to reproduce a build. |
+| [Complete reference photo set (ZIP)](test-rig-evidence/aeroflex-test-rig-reference-photo-set-20260817.zip?raw=1) | All 28 original project reference photos plus the individual-download index. |
+| [Source snapshot (ZIP)](test-rig-evidence/aeroflex-test-rig-source-c8e5bc8-20260817.zip?raw=1) | Complete committed source/documentation handoff snapshot at commit `c8e5bc8`. |
+| [Machine artifacts (ZIP)](test-rig-evidence/aeroflex-test-rig-machine-artifacts-20260817.zip?raw=1) | Generated dashboard build and PlatformIO build/cache trees from the commissioning workstation. It is reference evidence, not the preferred way to reproduce a build. |
 
 [![Smart Automation SM42HT47-1684B label and pulley](test-rig-evidence/motor-sm42ht47-1684b-label-and-pulley.jpg)](test-rig-evidence/motor-sm42ht47-1684b-label-and-pulley.jpg)
 
