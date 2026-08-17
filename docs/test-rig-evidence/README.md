@@ -5,6 +5,11 @@ This folder preserves user-supplied evidence and handoff bundles referenced by
 review artifacts; the tracked source tree remains the authoritative, reproducible
 implementation.
 
+For the complete individual-photo download list, see
+[`photo-downloads.md`](photo-downloads.md). The 26 original project photos are
+in [`photos/`](photos/); the two temporary-motor photos are retained at this
+folder's top level under their descriptive filenames.
+
 | File | Purpose | SHA-256 |
 |---|---|---|
 | `motor-sm42ht47-1684b-label-and-pulley.jpg` | Temporary Smart Automation SM42HT47-1684B motor label, body, shaft, and pulley. | `87A726064FB8E19068235EB5D155E7F3256E2E7A504C48D7F0AD3F0069BD1D02` |

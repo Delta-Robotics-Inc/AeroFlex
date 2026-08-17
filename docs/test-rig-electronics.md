@@ -415,6 +415,9 @@ without relying on an individual workstation. File descriptions and SHA-256
 checksums are recorded in
 [`test-rig-evidence/README.md`](test-rig-evidence/README.md).
 
+All 28 project reference photos now have individual download links in the
+[`Reference-photo downloads`](test-rig-evidence/photo-downloads.md) index.
+
 | Asset | Contents |
 |---|---|
 | [Motor label and pulley](test-rig-evidence/motor-sm42ht47-1684b-label-and-pulley.jpg) | Photo of the Smart Automation `SM42HT47-1684B` temporary stepper motor, its label, double shaft, and fitted pulley. |
